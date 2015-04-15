@@ -219,8 +219,8 @@ class SwiftConsole(HasTraits):
 
   def ext_event_callback(self, sbp_msg):
     e = MsgExtEvent(sbp_msg)
-    print 'External event: %s edge on pin %d at wn=%d, tow=%d, time qual=%s' % (
-      "Rising" if (e.flags & (1<<0)) else "Falling", e.pin, e.wn, e.tow,
+    print 'External event: %s edge on pin %d at wn=%d, tow=%.9f, time quality=%s' % (
+      "Rising" if (e.flags & (1<<0)) else "Falling", e.pin, e.wn, (e.tow * 1e-3 + e.ns * 1e-9),
       "good" if (e.flags & (1<<1)) else "unknown")
       
   def debug_var_callback(self, sbp_msg):

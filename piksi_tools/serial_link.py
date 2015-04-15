@@ -20,6 +20,7 @@ import time
 from sbp.logging                        import SBP_MSG_PRINT
 from sbp.piksi                          import SBP_MSG_RESET
 from sbp.system                         import SBP_MSG_HEARTBEAT
+from sbp.ext_events                     import SBP_MSG_EXT_EVENT, MsgExtEvent
 from sbp.client.drivers.file_driver     import FileDriver
 from sbp.client.drivers.pyserial_driver import PySerialDriver
 from sbp.client.drivers.pyftdi_driver   import PyFTDIDriver
@@ -142,6 +143,12 @@ def printer(sbp_msg):
   """
   sys.stdout.write(sbp_msg.payload)
 
+def ext_event_callback(sbp_msg):
+  e = MsgExtEvent(sbp_msg)
+  print 'External event: %s edge on pin %d at wn=%d, tow=%.9f, time quality=%s' % (
+    "Rising" if (e.flags & (1<<0)) else "Falling", e.pin, e.wn, (e.tow * 1e-3 + e.ns * 1e-9),
+    "good" if (e.flags & (1<<1)) else "unknown")
+
 def watchdog_alarm():
   """
   Called when the watchdog timer alarms. Will raise a KeyboardInterrupt to the
@@ -169,6 +176,7 @@ def main():
       # Logger with context
       with get_logger(args.log, args.json, args.byte, log_filename) as logger:
         link.add_callback(printer, SBP_MSG_PRINT)
+        link.add_callback(ext_event_callback, SBP_MSG_EXT_EVENT)
         link.add_callback(logger)
         link.start()
         # Reset device
